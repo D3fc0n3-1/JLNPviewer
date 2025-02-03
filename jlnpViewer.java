@@ -1,61 +1,52 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class JNLPApplet extends JFrame {
+public class JNLPApplet extends Application {
 
-    private JTextField urlField;
-    private JButton launchButton;
+    @Override
+    public void start(Stage primaryStage) {
+        TextField urlField = new TextField();
+        urlField.setPromptText("Enter JNLP URL");
 
-    public JNLPApplet() {
-        setLayout(new FlowLayout());
+        Button launchButton = new Button("Launch");
+        launchButton.setOnAction(event -> {
+            String url = urlField.getText();
+            if (url.isEmpty()) {
+                System.out.println("Please enter a URL");
+                return;
+            }
 
-        urlField = new JTextField(30);
-        add(urlField);
-
-        launchButton = new JButton("Launch");
-        launchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                launchJNLP();
+            try {
+                URI uri = new URI(url);
+                Desktop.getDesktop().browse(uri);
+            } catch (URISyntaxException | IOException ex) {
+                System.out.println("Error launching JNLP: " + ex.getMessage());
             }
         });
-        add(launchButton);
 
-        setSize(400, 100);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
-    }
+        VBox root = new VBox(10);
+        root.getChildren().addAll(urlField, launchButton);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(10));
 
-    private void launchJNLP() {
-        String url = urlField.getText();
-        if (url.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a URL");
-            return;
-        }
-
-        try {
-            URI uri = new URI(url);
-            Desktop.getDesktop().browse(uri);
-        } catch (URISyntaxException | IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error launching JNLP: " +
-ex.getMessage());
-        }
+        Scene scene = new Scene(root, 300, 100);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("JNLP Applet");
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new JNLPApplet();
-            }
-        });
+        launch(args);
     }
 }
-
